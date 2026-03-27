@@ -1,0 +1,39 @@
+{
+  "wafa": {
+    "username": "wafa",
+    "tasks": {
+      "1": {
+        "id": 1,
+        "description": "prueba de wafa",
+        "status": "done",
+        "created_at": 1774655227,
+        "updated_at": 1774655272
+      }
+    },
+    "next_id": 2,
+    "created_at": 1774655066,
+    "last_login": 1774655333
+  },
+  "luis": {
+    "username": "luis",
+    "tasks": {
+      "2": {
+        "id": 2,
+        "description": "holi",
+        "status": "todo",
+        "created_at": 1774655094,
+        "updated_at": 1774655094
+      },
+      "1": {
+        "id": 1,
+        "description": "pan para borrar",
+        "status": "todo",
+        "created_at": 1774655037,
+        "updated_at": 1774655037
+      }
+    },
+    "next_id": 3,
+    "created_at": 1774655008,
+    "last_login": 1774655008
+  }
+}
