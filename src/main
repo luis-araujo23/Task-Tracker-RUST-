@@ -3,25 +3,33 @@ mod storage;
 mod commands;
 mod utils;
 
-use commands::{add_task, update_task, delete_task, mark_task, list_tasks};
+use commands::{
+    add_task, update_task, delete_task, mark_task, list_tasks,
+    create_user, list_users, delete_user, switch_user
+};
 
 fn print_usage() {
-    println!("\n📌 TASK TRACKER CLI - Command Line Interface");
-    println!("{}\n", "=".repeat(50));
-    println!("USAGE:");
-    println!("  task_tracker add <description>");
-    println!("  task_tracker update <id> <description>");
-    println!("  task_tracker delete <id>");
-    println!("  task_tracker mark-in-progress <id>");
-    println!("  task_tracker mark-done <id>");
-    println!("  task_tracker list [status]");
+    println!("\n📌 TASK TRACKER CLI - Multi-User Task Management");
+    println!("{}\n", "=".repeat(60));
+    println!("USER MANAGEMENT:");
+    println!("  task_tracker create-user <username>     - Create a new user");
+    println!("  task_tracker list-users                  - List all users");
+    println!("  task_tracker switch-user <username>      - Switch to another user");
+    println!("  task_tracker delete-user <username>      - Delete a user");
+    println!("\nTASK MANAGEMENT (for current user):");
+    println!("  task_tracker add <description>           - Add a new task");
+    println!("  task_tracker update <id> <description>   - Update a task");
+    println!("  task_tracker delete <id>                 - Delete a task");
+    println!("  task_tracker mark-in-progress <id>       - Mark task as in progress");
+    println!("  task_tracker mark-done <id>              - Mark task as done");
+    println!("  task_tracker list [status]               - List tasks (todo/in-progress/done)");
     println!("\nSTATUS OPTIONS:");
     println!("  todo, in-progress, done");
-    println!("  (If no status provided, lists all tasks)");
     println!("\nEXAMPLES:");
+    println!("  task_tracker create-user alice");
     println!("  task_tracker add \"Buy groceries\"");
     println!("  task_tracker list done");
-    println!("  task_tracker mark-in-progress 1");
+    println!("  task_tracker switch-user bob");
 }
 
 fn main() {
@@ -35,6 +43,48 @@ fn main() {
     let command = &args[1];
     
     match command.as_str() {
+        // User management commands
+        "create-user" => {
+            if args.len() < 3 {
+                eprintln!("❌ Error: Please provide a username");
+                print_usage();
+                std::process::exit(1);
+            }
+            let username = &args[2];
+            if let Err(e) = create_user(username) {
+                eprintln!("❌ Error creating user: {}", e);
+                std::process::exit(1);
+            }
+        },
+        "list-users" => {
+            list_users();
+        },
+        "switch-user" => {
+            if args.len() < 3 {
+                eprintln!("❌ Error: Please provide a username");
+                print_usage();
+                std::process::exit(1);
+            }
+            let username = &args[2];
+            if let Err(e) = switch_user(username) {
+                eprintln!("❌ Error switching user: {}", e);
+                std::process::exit(1);
+            }
+        },
+        "delete-user" => {
+            if args.len() < 3 {
+                eprintln!("❌ Error: Please provide a username");
+                print_usage();
+                std::process::exit(1);
+            }
+            let username = &args[2];
+            if let Err(e) = delete_user(username) {
+                eprintln!("❌ Error deleting user: {}", e);
+                std::process::exit(1);
+            }
+        },
+        
+        // Task management commands
         "add" => {
             if args.len() < 3 {
                 eprintln!("❌ Error: Please provide a task description");

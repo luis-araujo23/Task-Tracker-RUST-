@@ -2,11 +2,13 @@ use std::fs;
 use std::io;
 use std::path::Path;
 use std::collections::HashMap;
-use crate::models::Task;
+use crate::models::User;
 
-const JSON_FILE: &str = "tasks.json";
+const JSON_FILE: &str = "task_tracker_data.json";
 
-pub fn load_tasks() -> HashMap<u64, Task> {
+pub type DataStore = HashMap<String, User>;
+
+pub fn load_data() -> DataStore {
     if !Path::new(JSON_FILE).exists() {
         return HashMap::new();
     }
@@ -15,12 +17,8 @@ pub fn load_tasks() -> HashMap<u64, Task> {
     serde_json::from_str(&data).unwrap_or_else(|_| HashMap::new())
 }
 
-pub fn save_tasks(tasks: &HashMap<u64, Task>) -> Result<(), io::Error> {
-    let json = serde_json::to_string_pretty(tasks)?;
+pub fn save_data(users: &DataStore) -> Result<(), io::Error> {
+    let json = serde_json::to_string_pretty(users)?;
     fs::write(JSON_FILE, json)?;
     Ok(())
-}
-
-pub fn get_next_id(tasks: &HashMap<u64, Task>) -> u64 {
-    tasks.keys().max().unwrap_or(&0) + 1
 }
