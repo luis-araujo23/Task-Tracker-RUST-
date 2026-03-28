@@ -1,32 +1,37 @@
 use std::io;
+use std::fs;
+use std::path::Path;
 use crate::models::User;
 use crate::storage::{load_data, save_data};
 use crate::utils::current_timestamp;
-use std::sync::OnceLock;
 
-static mut CURRENT_USER: OnceLock<String> = OnceLock::new();
+const CURRENT_USER_FILE: &str = "task_tracker_current_user.txt";
 
 pub fn get_current_user() -> String {
-    unsafe {
-        CURRENT_USER.get_or_init(|| {
-            // Try to load last user from file
-            let data = load_data();
-            if let Some(last_user) = std::env::var("TASK_TRACKER_USER").ok() {
-                if data.contains_key(&last_user) {
-                    return last_user;
-                }
+    let data = load_data();
+
+    if Path::new(CURRENT_USER_FILE).exists() {
+        if let Ok(saved_username) = fs::read_to_string(CURRENT_USER_FILE) {
+            let username = saved_username.trim();
+            if data.contains_key(username) {
+                return username.to_string();
             }
-            // Default to first user or empty
-            data.keys().next().cloned().unwrap_or_default()
-        }).clone()
+        }
     }
+
+    // Fallback deterministico para evitar elecciones aleatorias del HashMap.
+    let mut usernames: Vec<String> = data.keys().cloned().collect();
+    usernames.sort();
+    usernames.into_iter().next().unwrap_or_default()
 }
 
 pub fn set_current_user(username: &str) {
-    unsafe {
-        let _ = CURRENT_USER.set(username.to_string());
-        std::env::set_var("TASK_TRACKER_USER", username);
+    if username.is_empty() {
+        let _ = fs::remove_file(CURRENT_USER_FILE);
+        return;
     }
+
+    let _ = fs::write(CURRENT_USER_FILE, username);
 }
 
 pub fn create_user(username: &str) -> Result<(), io::Error> {
@@ -90,7 +95,10 @@ pub fn delete_user(username: &str) -> Result<(), io::Error> {
     
     // If we deleted the current user, clear it
     if current_user == username {
-        if let Some(first_user) = users.keys().next() {
+        let mut usernames: Vec<&String> = users.keys().collect();
+        usernames.sort();
+
+        if let Some(first_user) = usernames.first() {
             set_current_user(first_user);
             println!("⚠️  Current user '{}' was deleted. Switched to '{}'", username, first_user);
         } else {
